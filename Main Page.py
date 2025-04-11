@@ -3,6 +3,7 @@ import re
 import random
 import smtplib
 from email.mime.text import MIMEText
+import time
 
 # 📬 Email-sending function using Gmail SMTP
 def send_verification_email(to_email, code):
@@ -76,7 +77,7 @@ if st.session_state.auth_mode == "Sign Up":
             st.session_state.shown_welcome = False
             st.success("✅ Email verified and account created!")
 
-    st.markdown("Don't have an account? [Sign up here](?nav=signup)", unsafe_allow_html=True)
+    st.markdown("Don’t have an account? [Sign up here](?nav=signup)", unsafe_allow_html=True)
 
 elif st.session_state.auth_mode == "Sign In":
     st.subheader("🔑 Sign In")
@@ -123,12 +124,14 @@ if st.session_state.get("logged_in") and not st.session_state.get("shown_welcome
         unsafe_allow_html=True
     )
     st.session_state.shown_welcome = True
+    time.sleep(2.5)  # pause to allow user to see the pop-up
+    st.switch_page("pages/1_Dashboard.py")
 
 # ✅ Dashboard View with Log Out button
 if st.session_state.get("auth_mode") == "Dashboard" and st.session_state.get("logged_in"):
     st.markdown("<h3 style='color:#19527c;'>👋 Hello, and welcome to your dashboard</h3>", unsafe_allow_html=True)
 
- if st.button("Log Out 🔒"):
-    st.session_state.clear()
-    st.success("You’ve been logged out.")
-    st.stop()
+    if st.button("Log Out 🔒"):
+        st.session_state.clear()
+        st.success("You’ve been logged out.")
+        st.stop()
