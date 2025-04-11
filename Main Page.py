@@ -7,7 +7,7 @@ from sendgrid.helpers.mail import Mail
 # 📬 Email-sending function (HTML version)
 def send_verification_email(to_email, code):
     message = Mail(
-        from_email='bphf21106118@mahsastudent.edu.my',  # replace with your verified sender
+        from_email='chuahchuahchuah0930@gmail.com',  # replace with your verified sender
         to_emails=to_email,
         subject='Your OSCE App Verification Code',
         html_content=f"""
