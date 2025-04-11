@@ -1,8 +1,9 @@
 import streamlit as st
+import re
 
 st.set_page_config(page_title="OSCE Practice App", page_icon="🩺", layout="centered")
 
-# --- Hide Sidebar for Login Page ---
+# Hide sidebar
 st.markdown("""
     <style>
     [data-testid="stSidebar"] {
@@ -21,50 +22,70 @@ st.markdown("""
         color: #4a4a4a;
         margin-bottom: 2em;
     }
-    .login-box {
-        border: 1px solid #ddd;
-        border-radius: 15px;
-        padding: 2em;
-        background-color: #f9f9f9;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
     </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<div class='main-title'>Welcome to OSCE Practice App 🩺</div>", unsafe_allow_html=True)
 st.markdown("<div class='subtitle'>Practice. Reflect. Improve.</div>", unsafe_allow_html=True)
 
-# --- Email Auth Box ---
-with st.container():
-    st.markdown("<div class='login-box'>", unsafe_allow_html=True)
-    
-    auth_mode = st.radio("Choose an option:", ["Sign In", "Sign Up"], horizontal=True)
-    email = st.text_input("Email address")
-    password = st.text_input("Password", type="password")
+# Auth mode toggle
+if "auth_mode" not in st.session_state:
+    st.session_state.auth_mode = "Sign In"
 
-    if auth_mode == "Sign Up":
-        confirm_password = st.text_input("Confirm password", type="password")
-        if st.button("Create Account"):
-            if password != confirm_password:
-                st.error("Passwords do not match!")
-            elif not email or not password:
-                st.warning("Please enter all fields.")
-            else:
-                st.success("Verification email sent. Please confirm to continue.")
-                verified = st.checkbox("I have verified my email")
-                if verified:
-                    st.success("Account created and verified!")
-                    st.session_state["logged_in"] = True
-    else:
-        if st.button("Login"):
-            if email and password:
-                st.success("Welcome back! Redirecting to dashboard...")
-                st.session_state["logged_in"] = True
-            else:
-                st.warning("Please enter your credentials.")
+# Switch between login/signup/forgot
+if st.session_state.auth_mode == "Forgot Password":
+    st.subheader("🔐 Forgot Password")
+    reset_email = st.text_input("Enter your registered email")
+    if st.button("Send Reset Link"):
+        if reset_email:
+            st.success(f"Password reset link sent to {reset_email} (simulation)")
+        else:
+            st.warning("Please enter your email.")
+    st.button("Back to Login", on_click=lambda: st.session_state.update(auth_mode="Sign In"))
 
-    st.markdown("</div>", unsafe_allow_html=True)
+elif st.session_state.auth_mode == "Sign Up":
+    st.subheader("📝 Create Your Account")
+    new_email = st.text_input("Email address")
+    new_password = st.text_input("Password", type="password")
+    confirm_password = st.text_input("Confirm password", type="password")
 
-# Redirect simulation
-if st.session_state.get("logged_in"):
-    st.switch_page("pages/1_Dashboard.py")
+    def is_password_strong(pw):
+        return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", pw))
+
+    if st.button("Sign Up"):
+        if new_password != confirm_password:
+            st.error("❌ Passwords do not match")
+        elif not is_password_strong(new_password):
+            st.warning("⚠️ Password must be at least 8 characters and include uppercase, lowercase, and a number.")
+        elif new_email:
+            st.success("Verification email sent! Please check your inbox (simulated).")
+            verified = st.checkbox("I have verified my email")
+            if verified:
+                st.session_state.logged_in = True
+                st.success("✅ Account created and verified!")
+                st.switch_page("pages/1_Dashboard.py")
+        else:
+            st.warning("Please complete all fields.")
+    st.button("Back to Login", on_click=lambda: st.session_state.update(auth_mode="Sign In"))
+
+else:
+    st.subheader("🔑 Sign In")
+    login_email = st.text_input("Email address")
+    login_password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if login_email and login_password:
+            st.session_state.logged_in = True
+            st.success("✅ Login successful! Redirecting...")
+            st.switch_page("pages/1_Dashboard.py")
+        else:
+            st.warning("Please enter both email and password.")
+
+    st.markdown("""
+        <p style='font-size: 0.9em; color: #555;'>
+        Don’t have an account? <a href='#' onclick="window.location.reload();">Sign up here</a>
+        </p>
+    """, unsafe_allow_html=True)
+
+    if st.button("Forgot Password?"):
+        st.session_state.auth_mode = "Forgot Password"
