@@ -33,7 +33,7 @@ st.markdown("""
         background: none!important;
         border: none;
         padding: 0!important;
-        color: #19527c;
+        color: #00f5d4;
         text-decoration: underline;
         cursor: pointer;
         font-size: 0.9em;
@@ -100,25 +100,23 @@ else:
         else:
             st.warning("Please enter both email and password.")
 
-    # Interactive styled 'Sign up here' link
-    st.markdown(
-        """
+    if st.button("Forgot Password?"):
+        st.session_state.auth_mode = "Forgot Password"
+
+    st.markdown("""
         <p style='font-size: 0.9em; color: #555;'>
         Don’t have an account? 
-        <span style='color:#19527c; text-decoration:underline; cursor:pointer;' 
-              onClick="window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: 'sign_up'}, '*');">
+        <span class='link-button' onclick="window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: 'sign_up'}, '*');">
             Sign up here</span></p>
-        """,
-        unsafe_allow_html=True
-    )
+    """, unsafe_allow_html=True)
+
+    if 'trigger_sign_up' not in st.session_state:
+        st.session_state.trigger_sign_up = False
 
     trigger = st.text_input("hidden_trigger", value="", label_visibility="collapsed", key="trigger_sign_up_link")
     if trigger == "sign_up":
         st.session_state.auth_mode = "Sign Up"
         st.experimental_rerun()
-
-    if st.button("Forgot Password?"):
-        st.session_state.auth_mode = "Forgot Password"
 
 # --------------------- FADE-IN ANIMATION ---------------------
 if st.session_state.get("logged_in"):
