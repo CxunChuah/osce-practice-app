@@ -128,8 +128,7 @@ if st.session_state.get("logged_in") and not st.session_state.get("shown_welcome
 if st.session_state.get("auth_mode") == "Dashboard" and st.session_state.get("logged_in"):
     st.markdown("<h3 style='color:#19527c;'>👋 Hello, and welcome to your dashboard</h3>", unsafe_allow_html=True)
 
-    if st.button("Log Out 🔒"):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
-        st.success("You’ve been logged out.")
-        st.experimental_rerun()
+ if st.button("Log Out 🔒"):
+    st.session_state.clear()
+    st.success("You’ve been logged out.")
+    st.stop()
