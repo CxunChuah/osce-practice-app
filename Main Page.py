@@ -3,18 +3,19 @@ import re
 
 st.set_page_config(page_title="OSCE Practice App", page_icon="🩺", layout="centered")
 
-# Hide sidebar
+# Hide sidebar and enhance styling
 st.markdown("""
     <style>
     [data-testid="stSidebar"] {
         display: none;
     }
     .main-title {
-        font-size: 2.2em;
-        font-weight: bold;
+        font-size: 2.8em;
+        font-weight: 900;
         text-align: center;
         margin-top: 1em;
-        color: #19527c;
+        color: #0096c7;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
     .subtitle {
         font-size: 1.2em;
@@ -45,13 +46,12 @@ st.markdown("<div class='subtitle'>Practice. Reflect. Improve.</div>", unsafe_al
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "Sign In"
 
-# Trigger handler for simulated links
-if st.query_params.get("nav") == "signup":
+# Handle query parameter switching without experimental_set_query_params
+nav = st.query_params.get("nav", "").lower()
+if nav == "signup":
     st.session_state.auth_mode = "Sign Up"
-    st.experimental_set_query_params()
-elif st.query_params.get("nav") == "login":
+elif nav == "login":
     st.session_state.auth_mode = "Sign In"
-    st.experimental_set_query_params()
 
 # Switch between login/signup/forgot
 if st.session_state.auth_mode == "Forgot Password":
