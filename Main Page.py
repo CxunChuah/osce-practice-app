@@ -100,23 +100,25 @@ else:
         else:
             st.warning("Please enter both email and password.")
 
-    st.markdown("""
+    # Interactive styled 'Sign up here' link
+    st.markdown(
+        """
         <p style='font-size: 0.9em; color: #555;'>
-        Don’t have an account? <a href="" onclick="fetch('/_stcore/script', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ "name": "signup-click" })
-        }).then(() => location.reload()); return false;">Sign up here</a>
-        </p>
-    """, unsafe_allow_html=True)
+        Don’t have an account? 
+        <span style='color:#19527c; text-decoration:underline; cursor:pointer;' 
+              onClick="window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: 'sign_up'}, '*');">
+            Sign up here</span></p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    trigger = st.text_input("hidden_trigger", value="", label_visibility="collapsed", key="trigger_sign_up_link")
+    if trigger == "sign_up":
+        st.session_state.auth_mode = "Sign Up"
+        st.experimental_rerun()
+
     if st.button("Forgot Password?"):
         st.session_state.auth_mode = "Forgot Password"
-
-    # JS override link trigger with Streamlit state
-    st.experimental_data_editor({"signup-click": False}, key="signup-state")
-    if st.session_state.get("signup-state", {}).get("signup-click"):
-        st.session_state.auth_mode = "Sign Up"
-        st.rerun()
 
 # --------------------- FADE-IN ANIMATION ---------------------
 if st.session_state.get("logged_in"):
