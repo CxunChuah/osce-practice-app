@@ -27,7 +27,7 @@ def send_verification_email(to_email, code):
         </html>
         """
     )
-    message.reply_to = Email('bphf21106118@mahsastudent.edu.my')
+    message.reply_to = Email('chuahchuahchuah0930@gmail.com')
     try:
         sg = SendGridAPIClient(st.secrets["SENDGRID_API_KEY"])
         sg.send(message)
