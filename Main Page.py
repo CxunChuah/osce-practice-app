@@ -39,6 +39,13 @@ def send_verification_email(to_email, code):
 
 st.set_page_config(page_title="OSCE Practice App", page_icon="🩺", layout="centered")
 
+# ✅ Handle ?nav=signup or ?nav=login in URL
+query_params = st.query_params
+if query_params.get("nav") == "signup":
+    st.session_state.auth_mode = "Sign Up"
+elif query_params.get("nav") == "login":
+    st.session_state.auth_mode = "Sign In"
+
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "Sign In"
 
@@ -77,7 +84,7 @@ if st.session_state.auth_mode == "Sign Up":
             st.session_state.shown_welcome = False
             st.success("✅ Email verified and account created!")
 
-    st.markdown("Don’t have an account? [Sign up here](?nav=signup)", unsafe_allow_html=True)
+    st.markdown("Already have an account? [Log in here](?nav=login)", unsafe_allow_html=True)
 
 elif st.session_state.auth_mode == "Sign In":
     st.subheader("🔑 Sign In")
