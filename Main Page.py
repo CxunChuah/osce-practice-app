@@ -29,15 +29,6 @@ st.markdown("""
         background-color: #f9f9f9;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
-    .link-button {
-        background: none!important;
-        border: none;
-        padding: 0!important;
-        color: #19527c;
-        text-decoration: underline;
-        cursor: pointer;
-        font-size: 0.9em;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -68,6 +59,7 @@ elif st.session_state.auth_mode == "Sign Up":
     def is_password_strong(pw):
         return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", pw))
 
+    verified = False
     if st.button("Sign Up"):
         if new_password != confirm_password:
             st.error("❌ Passwords do not match")
@@ -75,13 +67,18 @@ elif st.session_state.auth_mode == "Sign Up":
             st.warning("⚠️ Password must be at least 8 characters and include uppercase, lowercase, and a number.")
         elif new_email:
             st.success("Verification email sent! Please check your inbox (simulated).")
-            verified = st.checkbox("I have verified my email")
-            if verified:
-                st.session_state.logged_in = True
-                st.success("✅ Account created and verified!")
+            st.session_state.show_verification = True
         else:
             st.warning("Please complete all fields.")
-    st.button("Back to Login", on_click=lambda: st.session_state.update(auth_mode="Sign In"))
+
+    if st.session_state.get("show_verification"):
+        verified = st.checkbox("I have verified my email")
+        if verified:
+            st.session_state.logged_in = True
+            st.success("✅ Account created and verified!")
+            st.switch_page("pages/1_Dashboard.py")
+
+    st.button("Back to Login", on_click=lambda: st.session_state.update(auth_mode="Sign In", show_verification=False))
 
 else:
     st.subheader("🔑 Sign In")
@@ -96,6 +93,7 @@ else:
 
     if st.button("Don’t have an account? Sign up here", key="signup-link"):
         st.session_state.auth_mode = "Sign Up"
+        st.session_state.show_verification = False
 
     if st.button("Forgot Password?"):
         st.session_state.auth_mode = "Forgot Password"
@@ -131,4 +129,3 @@ if st.session_state.get("logged_in"):
         """,
         unsafe_allow_html=True
     )
-    st.switch_page("pages/1_Dashboard.py")
