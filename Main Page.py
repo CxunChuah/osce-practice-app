@@ -4,7 +4,7 @@ import random
 import smtplib
 from email.mime.text import MIMEText
 
-# 📬 Email-sending function using Gmail SMTP instead of SendGrid
+# 📬 Email-sending function using Gmail SMTP
 def send_verification_email(to_email, code):
     sender_email = st.secrets["GMAIL_USER"]
     sender_password = st.secrets["GMAIL_PASS"]
@@ -38,77 +38,12 @@ def send_verification_email(to_email, code):
 
 st.set_page_config(page_title="OSCE Practice App", page_icon="🩺", layout="centered")
 
-# [Rest of the app remains unchanged]
-# Your sign-up and verification logic continues from here...
-
-
-# [Rest of the app remains unchanged]
-# Your sign-up and verification logic continues from here...
-
-
-# Hide sidebar and enhance styling
-st.markdown("""
-    <style>
-    [data-testid="stSidebar"] {
-        display: none;
-    }
-    .main-title {
-        font-size: 2.8em;
-        font-weight: 900;
-        text-align: center;
-        margin-top: 1em;
-        color: #0096c7;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-    .subtitle {
-        font-size: 1.2em;
-        text-align: center;
-        color: #4a4a4a;
-        margin-bottom: 2em;
-    }
-    .login-box {
-        border: 1px solid #ddd;
-        border-radius: 15px;
-        padding: 2em;
-        background-color: #f9f9f9;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    .link-button {
-        color: #00f5d4;
-        text-decoration: underline;
-        cursor: pointer;
-        font-size: 0.9em;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-st.markdown("<div class='main-title'>Welcome to OSCE Practice App 🩺</div>", unsafe_allow_html=True)
-st.markdown("<div class='subtitle'>Practice. Reflect. Improve.</div>", unsafe_allow_html=True)
-
-# Auth mode toggle
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "Sign In"
 
-# Handle query parameter switching without experimental_set_query_params
-nav = st.query_params.get("nav", "").lower()
-if nav == "signup":
-    st.session_state.auth_mode = "Sign Up"
-elif nav == "login":
-    st.session_state.auth_mode = "Sign In"
+st.markdown("<h1 style='text-align:center; color:#19527c;'>Welcome to OSCE Practice App 🩺</h1>", unsafe_allow_html=True)
 
-# Switch between login/signup/forgot
-if st.session_state.auth_mode == "Forgot Password":
-    st.subheader("🔐 Forgot Password")
-    reset_email = st.text_input("Enter your registered email")
-    if st.button("Send Reset Link"):
-        if reset_email:
-            st.success(f"Password reset link sent to {reset_email} (simulation)")
-        else:
-            st.warning("Please enter your email.")
-    if st.button("Back to Login"):
-        st.session_state.auth_mode = "Sign In"
-
-elif st.session_state.auth_mode == "Sign Up":
+if st.session_state.auth_mode == "Sign Up":
     st.subheader("📝 Create Your Account")
     new_email = st.text_input("Email address")
     new_password = st.text_input("Password", type="password")
@@ -137,16 +72,13 @@ elif st.session_state.auth_mode == "Sign Up":
         user_code = st.text_input("Enter the verification code")
         if user_code == st.session_state.get("generated_code"):
             st.session_state.logged_in = True
+            st.session_state.auth_mode = "Dashboard"
+            st.session_state.shown_welcome = False
             st.success("✅ Email verified and account created!")
-            st.switch_page("pages/1_Dashboard.py")
 
-    st.markdown("""
-        <p style='font-size: 0.9em; color: #555;'>
-        Already have an account? <a href='?nav=login' class='link-button'>Back to Login</a>
-        </p>
-    """, unsafe_allow_html=True)
+    st.markdown("Don't have an account? [Sign up here](?nav=signup)", unsafe_allow_html=True)
 
-else:
+elif st.session_state.auth_mode == "Sign In":
     st.subheader("🔑 Sign In")
     login_email = st.text_input("Email address")
     login_password = st.text_input("Password", type="password")
@@ -154,20 +86,15 @@ else:
     if st.button("Login"):
         if login_email and login_password:
             st.session_state.logged_in = True
+            st.session_state.auth_mode = "Dashboard"
+            st.session_state.shown_welcome = False
         else:
             st.warning("Please enter both email and password.")
 
-    if st.button("Forgot Password?"):
-        st.session_state.auth_mode = "Forgot Password"
+    st.markdown("Don’t have an account? [Sign up here](?nav=signup)", unsafe_allow_html=True)
 
-    st.markdown("""
-        <p style='font-size: 0.9em; color: #555;'>
-        Don’t have an account? <a href='?nav=signup' class='link-button'>Sign up here</a>
-        </p>
-    """, unsafe_allow_html=True)
-
-# --------------------- FADE-IN ANIMATION ---------------------
-if st.session_state.get("logged_in"):
+# ✅ Welcome Pop-up After Login
+if st.session_state.get("logged_in") and not st.session_state.get("shown_welcome"):
     st.markdown(
         """
         <style>
@@ -183,17 +110,26 @@ if st.session_state.get("logged_in"):
             animation: fadeIn 1s ease-in-out forwards;
             z-index: 9999;
         }
-
         @keyframes fadeIn {
             from {opacity: 0; transform: translate(-50%, -60%);}
             to {opacity: 1; transform: translate(-50%, -50%);}
         }
         </style>
-
         <div class='fade-popup'>
             <h3 style='color:#19527c;'>✅ Welcome!</h3>
-            <p style='font-size: 16px;'>You’ve successfully logged in to your OSCE Dashboard.</p>
+            <p style='font-size: 16px;'>You’ve successfully signed in to your OSCE Dashboard.</p>
         </div>
         """,
         unsafe_allow_html=True
     )
+    st.session_state.shown_welcome = True
+
+# ✅ Dashboard View with Log Out button
+if st.session_state.get("auth_mode") == "Dashboard" and st.session_state.get("logged_in"):
+    st.markdown("<h3 style='color:#19527c;'>👋 Hello, and welcome to your dashboard</h3>", unsafe_allow_html=True)
+
+    if st.button("Log Out 🔒"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.success("You’ve been logged out.")
+        st.experimental_rerun()
