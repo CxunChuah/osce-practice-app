@@ -29,6 +29,15 @@ st.markdown("""
         background-color: #f9f9f9;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
+    .link-button {
+        background: none!important;
+        border: none;
+        padding: 0!important;
+        color: #19527c;
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: 0.9em;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -85,11 +94,8 @@ else:
         else:
             st.warning("Please enter both email and password.")
 
-    st.markdown("""
-        <p style='font-size: 0.9em; color: #555;'>
-        Don’t have an account? <a href='#' onclick="window.location.reload();">Sign up here</a>
-        </p>
-    """, unsafe_allow_html=True)
+    if st.button("Don’t have an account? Sign up here", key="signup-link"):
+        st.session_state.auth_mode = "Sign Up"
 
     if st.button("Forgot Password?"):
         st.session_state.auth_mode = "Forgot Password"
