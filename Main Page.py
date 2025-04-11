@@ -39,6 +39,10 @@ def send_verification_email(to_email, code):
 
 st.set_page_config(page_title="OSCE Practice App", page_icon="🩺", layout="centered")
 
+# Simulate a registry of users
+if "registered_users" not in st.session_state:
+    st.session_state.registered_users = {}
+
 # ✅ Handle ?nav=signup or ?nav=login in URL
 query_params = st.query_params
 if query_params.get("nav") == "signup":
@@ -61,24 +65,30 @@ if st.session_state.auth_mode == "Sign Up":
         return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", pw))
 
     if st.button("Sign Up"):
-        if new_password != confirm_password:
+        if not new_email or not new_password or not confirm_password:
+            st.warning("Please complete all fields.")
+        elif new_password != confirm_password:
             st.error("❌ Passwords do not match")
         elif not is_password_strong(new_password):
             st.warning("⚠️ Password must be at least 8 characters and include uppercase, lowercase, and a number.")
-        elif new_email:
+        elif new_email in st.session_state.registered_users:
+            st.warning("This email is already registered. Please log in instead.")
+        else:
             code = str(random.randint(100000, 999999))
             st.session_state.generated_code = code
+            st.session_state.current_signup_email = new_email
             if send_verification_email(new_email, code):
                 st.success("📬 A verification code has been sent to your email!")
                 st.session_state.show_verification = True
             else:
                 st.error("❌ Failed to send email.")
-        else:
-            st.warning("Please complete all fields.")
 
     if st.session_state.get("show_verification"):
         user_code = st.text_input("Enter the verification code")
         if user_code == st.session_state.get("generated_code"):
+            email = st.session_state.get("current_signup_email")
+            if email:
+                st.session_state.registered_users[email] = {"created": True}
             st.session_state.logged_in = True
             st.session_state.auth_mode = "Dashboard"
             st.session_state.shown_welcome = False
@@ -131,7 +141,7 @@ if st.session_state.get("logged_in") and not st.session_state.get("shown_welcome
         unsafe_allow_html=True
     )
     st.session_state.shown_welcome = True
-    time.sleep(2.5)  # pause to allow user to see the pop-up
+    time.sleep(2.5)
     st.switch_page("pages/1_Dashboard.py")
 
 # ✅ Dashboard View with Log Out button
