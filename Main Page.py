@@ -63,7 +63,6 @@ elif st.session_state.auth_mode == "Sign Up":
             if verified:
                 st.session_state.logged_in = True
                 st.success("✅ Account created and verified!")
-                st.switch_page("pages/1_Dashboard.py")
         else:
             st.warning("Please complete all fields.")
     st.button("Back to Login", on_click=lambda: st.session_state.update(auth_mode="Sign In"))
@@ -76,8 +75,6 @@ else:
     if st.button("Login"):
         if login_email and login_password:
             st.session_state.logged_in = True
-            st.success("✅ Login successful! Redirecting...")
-            st.switch_page("pages/1_Dashboard.py")
         else:
             st.warning("Please enter both email and password.")
 
@@ -89,3 +86,36 @@ else:
 
     if st.button("Forgot Password?"):
         st.session_state.auth_mode = "Forgot Password"
+
+# --------------------- FADE-IN ANIMATION ---------------------
+if st.session_state.get("logged_in"):
+    st.markdown(
+        """
+        <style>
+        .fade-popup {
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 2em 3em;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            animation: fadeIn 1s ease-in-out forwards;
+            z-index: 9999;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translate(-50%, -60%);}
+            to {opacity: 1; transform: translate(-50%, -50%);}
+        }
+        </style>
+
+        <div class='fade-popup'>
+            <h3 style='color:#19527c;'>✅ Welcome!</h3>
+            <p style='font-size: 16px;'>You’ve successfully logged in to your OSCE Dashboard.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    st.switch_page("pages/1_Dashboard.py")
