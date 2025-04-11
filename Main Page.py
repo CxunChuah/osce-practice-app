@@ -30,9 +30,6 @@ st.markdown("""
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
     .link-button {
-        background: none!important;
-        border: none;
-        padding: 0!important;
         color: #00f5d4;
         text-decoration: underline;
         cursor: pointer;
@@ -87,7 +84,16 @@ elif st.session_state.auth_mode == "Sign Up":
             st.success("✅ Account created and verified!")
             st.switch_page("pages/1_Dashboard.py")
 
-    st.button("Back to Login", on_click=lambda: st.session_state.update(auth_mode="Sign In", show_verification=False))
+    st.markdown("""
+        <p style='font-size: 0.9em; color: #555;'>
+        Already have an account? <span class='link-button' onclick="window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: 'back_login'}, '*');">Back to Login</span>
+        </p>
+    """, unsafe_allow_html=True)
+
+    back_trigger = st.text_input("hidden_back_trigger", value="", label_visibility="collapsed", key="trigger_back_login")
+    if back_trigger == "back_login":
+        st.session_state.auth_mode = "Sign In"
+        st.experimental_rerun()
 
 else:
     st.subheader("🔑 Sign In")
@@ -105,13 +111,8 @@ else:
 
     st.markdown("""
         <p style='font-size: 0.9em; color: #555;'>
-        Don’t have an account? 
-        <span class='link-button' onclick="window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: 'sign_up'}, '*');">
-            Sign up here</span></p>
+        Don’t have an account? <span class='link-button' onclick="window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: 'sign_up'}, '*');">Sign up here</span></p>
     """, unsafe_allow_html=True)
-
-    if 'trigger_sign_up' not in st.session_state:
-        st.session_state.trigger_sign_up = False
 
     trigger = st.text_input("hidden_trigger", value="", label_visibility="collapsed", key="trigger_sign_up_link")
     if trigger == "sign_up":
