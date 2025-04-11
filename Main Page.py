@@ -1,5 +1,24 @@
 import streamlit as st
 import re
+import random
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
+# 📬 Email-sending function
+def send_verification_email(to_email, code):
+    message = Mail(
+        from_email='your_verified_sender@example.com',  # replace with your verified sender
+        to_emails=to_email,
+        subject='Your OSCE App Verification Code',
+        plain_text_content=f'Your verification code is: {code}'
+    )
+    try:
+        sg = SendGridAPIClient(st.secrets["SENDGRID_API_KEY"])
+        sg.send(message)
+        return True
+    except Exception as e:
+        print("Error sending email:", e)
+        return False
 
 st.set_page_config(page_title="OSCE Practice App", page_icon="🩺", layout="centered")
 
@@ -74,23 +93,27 @@ elif st.session_state.auth_mode == "Sign Up":
     def is_password_strong(pw):
         return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", pw))
 
-    verified = False
     if st.button("Sign Up"):
         if new_password != confirm_password:
             st.error("❌ Passwords do not match")
         elif not is_password_strong(new_password):
             st.warning("⚠️ Password must be at least 8 characters and include uppercase, lowercase, and a number.")
         elif new_email:
-            st.success("Verification email sent! Please check your inbox (simulated).")
-            st.session_state.show_verification = True
+            code = str(random.randint(100000, 999999))
+            st.session_state.generated_code = code
+            if send_verification_email(new_email, code):
+                st.success("📬 A verification code has been sent to your email!")
+                st.session_state.show_verification = True
+            else:
+                st.error("❌ Failed to send email.")
         else:
             st.warning("Please complete all fields.")
 
     if st.session_state.get("show_verification"):
-        verified = st.checkbox("I have verified my email")
-        if verified:
+        user_code = st.text_input("Enter the verification code")
+        if user_code == st.session_state.get("generated_code"):
             st.session_state.logged_in = True
-            st.success("✅ Account created and verified!")
+            st.success("✅ Email verified and account created!")
             st.switch_page("pages/1_Dashboard.py")
 
     st.markdown("""
