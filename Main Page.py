@@ -78,11 +78,8 @@ else:
         else:
             st.warning("Please enter both email and password.")
 
-    st.markdown("""
-        <p style='font-size: 0.9em; color: #555;'>
-        Don’t have an account? <a href='#' onclick="window.location.reload();">Sign up here</a>
-        </p>
-    """, unsafe_allow_html=True)
+    if st.button("Don't have an account? Sign up here"):
+        st.session_state.auth_mode = "Sign Up"
 
     if st.button("Forgot Password?"):
         st.session_state.auth_mode = "Forgot Password"
