@@ -45,6 +45,14 @@ st.markdown("<div class='subtitle'>Practice. Reflect. Improve.</div>", unsafe_al
 if "auth_mode" not in st.session_state:
     st.session_state.auth_mode = "Sign In"
 
+# Trigger handler for simulated links
+if st.query_params.get("nav") == "signup":
+    st.session_state.auth_mode = "Sign Up"
+    st.experimental_set_query_params()
+elif st.query_params.get("nav") == "login":
+    st.session_state.auth_mode = "Sign In"
+    st.experimental_set_query_params()
+
 # Switch between login/signup/forgot
 if st.session_state.auth_mode == "Forgot Password":
     st.subheader("🔐 Forgot Password")
@@ -54,7 +62,8 @@ if st.session_state.auth_mode == "Forgot Password":
             st.success(f"Password reset link sent to {reset_email} (simulation)")
         else:
             st.warning("Please enter your email.")
-    st.button("Back to Login", on_click=lambda: st.session_state.update(auth_mode="Sign In"))
+    if st.button("Back to Login"):
+        st.session_state.auth_mode = "Sign In"
 
 elif st.session_state.auth_mode == "Sign Up":
     st.subheader("📝 Create Your Account")
@@ -86,14 +95,9 @@ elif st.session_state.auth_mode == "Sign Up":
 
     st.markdown("""
         <p style='font-size: 0.9em; color: #555;'>
-        Already have an account? <span class='link-button' onclick="window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: 'back_login'}, '*');">Back to Login</span>
+        Already have an account? <a href='?nav=login' class='link-button'>Back to Login</a>
         </p>
     """, unsafe_allow_html=True)
-
-    back_trigger = st.text_input("hidden_back_trigger", value="", label_visibility="collapsed", key="trigger_back_login")
-    if back_trigger == "back_login":
-        st.session_state.auth_mode = "Sign In"
-        st.experimental_rerun()
 
 else:
     st.subheader("🔑 Sign In")
@@ -111,13 +115,9 @@ else:
 
     st.markdown("""
         <p style='font-size: 0.9em; color: #555;'>
-        Don’t have an account? <span class='link-button' onclick="window.parent.postMessage({isStreamlitMessage: true, type: 'streamlit:setComponentValue', value: 'sign_up'}, '*');">Sign up here</span></p>
+        Don’t have an account? <a href='?nav=signup' class='link-button'>Sign up here</a>
+        </p>
     """, unsafe_allow_html=True)
-
-    trigger = st.text_input("hidden_trigger", value="", label_visibility="collapsed", key="trigger_sign_up_link")
-    if trigger == "sign_up":
-        st.session_state.auth_mode = "Sign Up"
-        st.experimental_rerun()
 
 # --------------------- FADE-IN ANIMATION ---------------------
 if st.session_state.get("logged_in"):
