@@ -1,40 +1,21 @@
-import streamlit as st
-import re
-import random
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, Email
+import smtplib
+from email.mime.text import MIMEText
 
-# 📬 Enhanced HTML Email-sending function with reply-to and friendlier formatting
 def send_verification_email(to_email, code):
-    message = Mail(
-        from_email=Email('chuahchuahchuah0930@gmail.com', name='OSCE Support Team'),
-        to_emails=to_email,
-        subject='Your OSCE Signup Code (Check Inbox)',
-        html_content=f"""
-        <html>
-        <body style='font-family: Arial, sans-serif;'>
-        <h2 style='color: #19527c;'>Hi there 👋</h2>
-        <p>Thank you for signing up with <strong>OSCE Practice App</strong>.</p>
-        <p>Your verification code is:</p>
-        <div style='font-size: 24px; font-weight: bold; color: #0096c7; margin: 10px 0;'>{code}</div>
-        <p>If you did not request this, you can safely ignore this email.</p>
-        <hr>
-        <p style='font-size: 13px; color: #888;'>
-        OSCE Practice App • For safe and effective clinical exam prep<br>
-        This is an automated message, please do not reply directly.
-        </p>
-        </body>
-        </html>
-        """
-    )
-    message.reply_to = Email('chuahchuahchuah0930@gmail.com')
+    msg = MIMEText(f"Your OSCE verification code is: {code}", "plain")
+    msg["Subject"] = "Your OSCE Signup Code"
+    msg["From"] = "osce.practice.app@gmail.com"
+    msg["To"] = to_email
+
     try:
-        sg = SendGridAPIClient(st.secrets["SENDGRID_API_KEY"])
-        sg.send(message)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login("osce.practice.app@gmail.com", "your_app_password_here")
+            server.send_message(msg)
         return True
     except Exception as e:
-        print("Error sending email:", e)
+        print("SMTP Error:", e)
         return False
+
 
 st.set_page_config(page_title="OSCE Practice App", page_icon="🩺", layout="centered")
 
