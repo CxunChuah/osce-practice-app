@@ -1,23 +1,46 @@
+import streamlit as st
+import re
+import random
 import smtplib
 from email.mime.text import MIMEText
 
+# 📬 Email-sending function using Gmail SMTP instead of SendGrid
 def send_verification_email(to_email, code):
-    msg = MIMEText(f"Your OSCE verification code is: {code}", "plain")
-    msg["Subject"] = "Your OSCE Signup Code"
-    msg["From"] = "osce.practice.app@gmail.com"
+    sender_email = st.secrets["GMAIL_USER"]
+    sender_password = st.secrets["GMAIL_PASS"]
+    subject = "Your OSCE Signup Code (Check Inbox)"
+    body = f"""
+    Hi there 👋,
+
+    Thanks for signing up with OSCE Practice App.
+
+    Your verification code is: {code}
+
+    If you didn’t request this, you can safely ignore this message.
+
+    Cheers,
+    The OSCE Team 🩺
+    """
+
+    msg = MIMEText(body, "plain")
+    msg["Subject"] = subject
+    msg["From"] = sender_email
     msg["To"] = to_email
 
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login("osce.practice.app@gmail.com", "your_app_password_here")
+            server.login(sender_email, sender_password)
             server.send_message(msg)
         return True
     except Exception as e:
         print("SMTP Error:", e)
         return False
 
-
 st.set_page_config(page_title="OSCE Practice App", page_icon="🩺", layout="centered")
+
+# [Rest of the app remains unchanged]
+# Your sign-up and verification logic continues from here...
+
 
 # [Rest of the app remains unchanged]
 # Your sign-up and verification logic continues from here...
