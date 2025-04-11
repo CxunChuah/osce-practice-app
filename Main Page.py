@@ -4,13 +4,18 @@ import random
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-# 📬 Email-sending function
+# 📬 Email-sending function (HTML version)
 def send_verification_email(to_email, code):
     message = Mail(
-        from_email='bphf21106118@mahsastudent.edu.my',  # replace with your verified sender
+        from_email='your_verified_sender@example.com',  # replace with your verified sender
         to_emails=to_email,
         subject='Your OSCE App Verification Code',
-        plain_text_content=f'Your verification code is: {code}'
+        html_content=f"""
+        <p>Hi there 👋,</p>
+        <p>Your verification code is: <strong>{code}</strong></p>
+        <p>If you didn’t request this, just ignore it.</p>
+        <p>Cheers,<br>The OSCE Team</p>
+        """
     )
     try:
         sg = SendGridAPIClient(st.secrets["SENDGRID_API_KEY"])
