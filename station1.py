@@ -13,6 +13,18 @@ def load_scenarios():
                 "id": 1,
                 "title": "Knee Pain Assessment",
                 "description": "A 45-year-old patient presents with right knee pain that started 2 weeks ago.",
+                "patient_details": {
+                    "name": "John Smith",
+                    "age": 45,
+                    "gender": "Male",
+                    "race": "Caucasian",
+                    "occupation": "Office worker",
+                    "diagnosis": "Suspected meniscal tear",
+                    "management": "Referred for physiotherapy assessment",
+                    "investigation": "X-ray negative for fracture",
+                    "chief_complaint": "Right knee pain when walking and climbing stairs",
+                    "patient_goal": "Return to recreational jogging"
+                },
                 "key_history_points": [
                     "Pain characteristics (location, type, severity)",
                     "Onset and duration",
@@ -31,6 +43,18 @@ def load_scenarios():
                 "id": 2,
                 "title": "Lower Back Pain Assessment",
                 "description": "A 35-year-old office worker presents with lower back pain that has been persistent for 3 months.",
+                "patient_details": {
+                    "name": "Sarah Johnson",
+                    "age": 35,
+                    "gender": "Female",
+                    "race": "Asian",
+                    "occupation": "Software Developer",
+                    "diagnosis": "Non-specific low back pain",
+                    "management": "Referred for physiotherapy assessment",
+                    "investigation": "MRI shows mild disc bulge at L4/L5",
+                    "chief_complaint": "Lower back pain that worsens after long periods of sitting",
+                    "patient_goal": "Work without pain and return to yoga classes"
+                },
                 "key_history_points": [
                     "Pain characteristics (location, type, severity)",
                     "Onset and duration",
@@ -71,6 +95,11 @@ def save_session_data(username, session_data):
     with open(history_file, "w") as f:
         json.dump(history, f)
 
+def format_time(seconds):
+    """Format seconds into MM:SS display"""
+    mins, secs = divmod(seconds, 60)
+    return f"{mins:02d}:{secs:02d}"
+
 def display_station1():
     st.title("Station 1: History Taking + VIVA")
     
@@ -85,6 +114,8 @@ def display_station1():
         st.session_state.checked_items = []
     if 'viva_answers' not in st.session_state:
         st.session_state.viva_answers = {}
+    if 'subjective_data' not in st.session_state:
+        st.session_state.subjective_data = {}
     if 'selected_scenario' not in st.session_state:
         scenarios = load_scenarios()
         if scenarios:
@@ -102,12 +133,16 @@ def display_station1():
         for scenario in scenarios:
             if scenario["title"] == selected_title:
                 st.session_state.selected_scenario = scenario
+                # Initialize subjective data with empty values
+                if scenario.get("patient_details"):
+                    st.session_state.subjective_data = {k: "" for k in scenario["patient_details"].keys()}
                 break
         
         st.markdown("### Instructions:")
-        st.markdown("1. You will have 7 minutes for history taking")
-        st.markdown("2. Followed by 3 minutes for VIVA questions")
+        st.markdown("1. The history taking phase will be timed with a stopwatch")
+        st.markdown("2. The VIVA questions phase will also be timed")
         st.markdown("3. Your responses will be saved for review")
+        st.markdown("4. You'll start with a Subjective assessment (SOAPIER format)")
         
         if st.button("Start Station 1"):
             st.session_state.station1_phase = 'history'
@@ -118,16 +153,58 @@ def display_station1():
     elif st.session_state.station1_phase == 'history':
         scenario = st.session_state.selected_scenario
         elapsed_time = int(time.time() - st.session_state.start_time)
-        remaining_time = max(0, 7 * 60 - elapsed_time)
         
-        # Display timer
-        mins, secs = divmod(remaining_time, 60)
-        timer_text = f"{mins:02d}:{secs:02d}"
-        st.markdown(f"<h2 style='text-align: center;'>History Taking: {timer_text}</h2>", unsafe_allow_html=True)
+        # Display stopwatch instead of countdown
+        time_text = format_time(elapsed_time)
+        st.markdown(f"<h2 style='text-align: center;'>History Taking: {time_text}</h2>", unsafe_allow_html=True)
         
         # Display scenario
         st.markdown("### Patient Scenario")
         st.markdown(scenario["description"])
+        
+        # Subjective assessment table (SOAPIER)
+        st.markdown("### Subjective Assessment")
+        
+        # Create a two-column layout for the table
+        col1, col2 = st.columns(2)
+        
+        # Define subjective components
+        subjective_components = {
+            "Name": "",
+            "Age": "",
+            "Gender": "",
+            "Race": "",
+            "Occupation": "",
+            "Date of Assessment": datetime.now().strftime("%Y-%m-%d"),
+            "Doctor's Diagnosis": "",
+            "Doctor's Management": "",
+            "Investigation": "",
+            "Chief Complaint": "",
+            "Patient's Goal": ""
+        }
+        
+        # Display form fields for subjective data
+        for i, (label, default_value) in enumerate(subjective_components.items()):
+            with col1:
+                st.markdown(f"**{label}:**")
+            with col2:
+                key = f"subj_{label.lower().replace(' ', '_').replace(''', '')}"
+                
+                # Use the patient details as placeholder hints if available
+                placeholder = ""
+                if scenario.get("patient_details"):
+                    field_key = label.lower().replace(' ', '_').replace('\'s', '').replace('doctor\'s', 'doctor')
+                    for scenario_key in scenario["patient_details"].keys():
+                        if scenario_key.lower() == field_key:
+                            placeholder = scenario["patient_details"][scenario_key]
+                
+                # Store input in session state
+                st.session_state.subjective_data[key] = st.text_input(
+                    "", 
+                    key=key,
+                    value=st.session_state.subjective_data.get(key, ""),
+                    placeholder=placeholder
+                )
         
         # History taking checklist
         st.markdown("### Key History Points")
@@ -143,28 +220,29 @@ def display_station1():
                                                      value=st.session_state.history_notes,
                                                      height=200)
         
-        # Auto-transition after 7 minutes
-        if remaining_time <= 0:
-            st.session_state.station1_phase = 'viva'
-            st.rerun()
-            
         # Manual transition button
         if st.button("Proceed to VIVA"):
+            st.session_state.history_end_time = time.time()  # Record when history phase ended
             st.session_state.station1_phase = 'viva'
             st.rerun()
     
     # VIVA phase
     elif st.session_state.station1_phase == 'viva':
         scenario = st.session_state.selected_scenario
-        elapsed_time = int(time.time() - st.session_state.start_time)
-        history_time = min(7 * 60, elapsed_time)  # Cap at 7 minutes
-        viva_elapsed = elapsed_time - history_time
-        remaining_time = max(0, 3 * 60 - viva_elapsed)
         
-        # Display timer
-        mins, secs = divmod(remaining_time, 60)
-        timer_text = f"{mins:02d}:{secs:02d}"
-        st.markdown(f"<h2 style='text-align: center;'>VIVA Session: {timer_text}</h2>", unsafe_allow_html=True)
+        # If history_end_time is not set, set it now
+        if 'history_end_time' not in st.session_state:
+            st.session_state.history_end_time = time.time()
+        
+        # Calculate elapsed time for history phase
+        history_elapsed = int(st.session_state.history_end_time - st.session_state.start_time)
+        
+        # Calculate elapsed time for VIVA phase
+        viva_elapsed = int(time.time() - st.session_state.history_end_time)
+        
+        # Display stopwatch
+        time_text = format_time(viva_elapsed)
+        st.markdown(f"<h2 style='text-align: center;'>VIVA Session: {time_text}</h2>", unsafe_allow_html=True)
         
         # Display VIVA questions
         st.markdown("### VIVA Questions")
@@ -177,13 +255,9 @@ def display_station1():
                 key=answer_key
             )
         
-        # Auto-transition after 3 minutes of VIVA
-        if remaining_time <= 0:
-            st.session_state.station1_phase = 'summary'
-            st.rerun()
-            
         # Manual finish button
         if st.button("Finish Station"):
+            st.session_state.viva_end_time = time.time()  # Record when VIVA phase ended
             st.session_state.station1_phase = 'summary'
             st.rerun()
     
@@ -194,14 +268,40 @@ def display_station1():
         
         scenario = st.session_state.selected_scenario
         
+        # Calculate times
+        history_time = "N/A"
+        viva_time = "N/A"
+        
+        if hasattr(st.session_state, 'history_end_time') and hasattr(st.session_state, 'start_time'):
+            history_seconds = int(st.session_state.history_end_time - st.session_state.start_time)
+            history_time = format_time(history_seconds)
+            
+        if hasattr(st.session_state, 'viva_end_time') and hasattr(st.session_state, 'history_end_time'):
+            viva_seconds = int(st.session_state.viva_end_time - st.session_state.history_end_time)
+            viva_time = format_time(viva_seconds)
+        
+        # Display time metrics
+        st.markdown(f"**History Taking Time:** {history_time}")
+        st.markdown(f"**VIVA Session Time:** {viva_time}")
+        
         # Calculate performance metrics
         checked_points = len(st.session_state.checked_items)
         total_points = len(scenario["key_history_points"])
         history_percentage = (checked_points / total_points) * 100 if total_points > 0 else 0
         
-        # Display metrics
+        # Display coverage metrics
         st.markdown(f"**History Taking Coverage:** {history_percentage:.1f}%")
         st.markdown(f"**Points Covered:** {checked_points}/{total_points}")
+        
+        # Display subjective data
+        st.markdown("### Subjective Assessment")
+        subjective_data_markdown = ""
+        for key, value in st.session_state.subjective_data.items():
+            # Convert key from subj_name to Name
+            display_key = key.replace('subj_', '').replace('_', ' ').title()
+            subjective_data_markdown += f"**{display_key}:** {value}\n\n"
+        
+        st.markdown(subjective_data_markdown)
         
         # Display history notes
         st.markdown("### Your History Notes")
@@ -221,9 +321,12 @@ def display_station1():
             session_data = {
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "scenario": scenario["title"],
+                "history_time": history_time,
+                "viva_time": viva_time,
                 "history_coverage": history_percentage,
                 "points_covered": checked_points,
                 "total_points": total_points,
+                "subjective_data": st.session_state.subjective_data,
                 "history_notes": st.session_state.history_notes,
                 "viva_answers": st.session_state.viva_answers
             }
@@ -232,10 +335,16 @@ def display_station1():
         
         # Return to dashboard
         if st.button("Return to Dashboard"):
+            # Reset all session state variables
             st.session_state.station1_phase = 'intro'
             st.session_state.history_notes = ""
             st.session_state.checked_items = []
             st.session_state.viva_answers = {}
+            st.session_state.subjective_data = {}
             st.session_state.start_time = None
+            if 'history_end_time' in st.session_state:
+                del st.session_state.history_end_time
+            if 'viva_end_time' in st.session_state:
+                del st.session_state.viva_end_time
             # Navigate back to dashboard
             st.switch_page("pages/1_Dashboard.py")
