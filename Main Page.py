@@ -1,3 +1,18 @@
+# Add this to the top of your Main Page.py file, after the imports but before the page config
+
+# Hide sidebar when not logged in
+if not st.session_state.get("logged_in", False):
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"] {
+            display: none;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 import streamlit as st
 import re
 import random
