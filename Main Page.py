@@ -1,4 +1,9 @@
-# Add this to the top of your Main Page.py file, after the imports but before the page config
+import streamlit as st
+import re
+import random
+import smtplib
+from email.mime.text import MIMEText
+import time
 
 # Hide sidebar when not logged in
 if not st.session_state.get("logged_in", False):
@@ -12,13 +17,6 @@ if not st.session_state.get("logged_in", False):
         """,
         unsafe_allow_html=True
     )
-
-import streamlit as st
-import re
-import random
-import smtplib
-from email.mime.text import MIMEText
-import time
 
 # 📬 Email-sending function using Gmail SMTP
 def send_verification_email(to_email, code):
@@ -70,6 +68,10 @@ if "auth_mode" not in st.session_state:
 
 st.markdown("<h1 style='text-align:center; color:#19527c;'>Welcome to OSCE Practice App 🩺</h1>", unsafe_allow_html=True)
 
+# Define password strength function at the module level
+def is_password_strong(pw):
+    return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", pw))
+
 if st.session_state.auth_mode == "Sign Up":
     st.subheader("📝 Create Your Account")
     
@@ -98,9 +100,6 @@ if st.session_state.auth_mode == "Sign Up":
                     st.session_state.show_verification = True
                 else:
                     st.error("❌ Failed to send email.")
-
-    def is_password_strong(pw):
-        return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", pw))
 
     if st.session_state.get("show_verification"):
         with st.form(key="verification_form"):
