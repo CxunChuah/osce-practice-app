@@ -112,7 +112,7 @@ def display_station1():
         if st.button("Start Station 1"):
             st.session_state.station1_phase = 'history'
             st.session_state.start_time = time.time()
-            st.experimental_rerun()
+            st.rerun()
     
     # History taking phase
     elif st.session_state.station1_phase == 'history':
@@ -146,12 +146,12 @@ def display_station1():
         # Auto-transition after 7 minutes
         if remaining_time <= 0:
             st.session_state.station1_phase = 'viva'
-            st.experimental_rerun()
+            st.rerun()
             
         # Manual transition button
         if st.button("Proceed to VIVA"):
             st.session_state.station1_phase = 'viva'
-            st.experimental_rerun()
+            st.rerun()
     
     # VIVA phase
     elif st.session_state.station1_phase == 'viva':
@@ -180,12 +180,12 @@ def display_station1():
         # Auto-transition after 3 minutes of VIVA
         if remaining_time <= 0:
             st.session_state.station1_phase = 'summary'
-            st.experimental_rerun()
+            st.rerun()
             
         # Manual finish button
         if st.button("Finish Station"):
             st.session_state.station1_phase = 'summary'
-            st.experimental_rerun()
+            st.rerun()
     
     # Summary phase
     elif st.session_state.station1_phase == 'summary':
