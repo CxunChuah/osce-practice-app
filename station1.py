@@ -1,5 +1,3 @@
-# station1.py - Create this new file for Station 1 functionality
-
 import streamlit as st
 import time
 import json
@@ -239,5 +237,5 @@ def display_station1():
             st.session_state.checked_items = []
             st.session_state.viva_answers = {}
             st.session_state.start_time = None
-            st.session_state.page = "dashboard"
-            st.experimental_rerun()
+            # Navigate back to dashboard
+            st.switch_page("pages/1_Dashboard.py")
