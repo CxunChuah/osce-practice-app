@@ -1,165 +1,154 @@
 import streamlit as st
-import os
-import json
-import pandas as pd
-from pathlib import Path
-from login import login_page
-from signup import signup_page
-from station1 import display_station1  # New import for Station 1
+import re
+import random
+import smtplib
+from email.mime.text import MIMEText
+import time
 
-# Make sure the data directory exists
-if not os.path.exists("data"):
-    os.makedirs("data")
+# 📬 Email-sending function using Gmail SMTP
+def send_verification_email(to_email, code):
+    sender_email = st.secrets["GMAIL_USER"]
+    sender_password = st.secrets["GMAIL_PASS"]
+    subject = "Your OSCE Signup Code (Check Inbox)"
+    body = f"""
+    Hi there 👋,
 
-# Initialize user database file if it doesn't exist
-if not os.path.exists("data/users.json"):
-    with open("data/users.json", "w") as f:
-        json.dump({}, f)
+    Thanks for signing up with OSCE Practice App.
 
-def display_dashboard():
-    # Welcome animation (using CSS)
-    st.markdown("""
-    <style>
-    @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-    }
-    .welcome-text {
-        animation: fadeIn 1.5s ease-in-out;
-        text-align: center;
-        font-size: 2.5rem;
-        margin-bottom: 2rem;
-        color: #4CAF50;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-    
-    st.markdown(f'<div class="welcome-text">Welcome, {st.session_state.username}!</div>', unsafe_allow_html=True)
-    
-    # Quick access buttons
-    st.markdown("### Quick Access")
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        if st.button("Start Practice"):
-            st.session_state.page = "practice"
-            st.experimental_rerun()
-    
-    with col2:
-        if st.button("My History"):
-            st.session_state.page = "history"
-            st.experimental_rerun()
-    
-    with col3:
-        if st.button("Mock Exam"):
-            st.session_state.page = "mock"
-            st.experimental_rerun()
-    
-    # Recent activity or stats could go here
-    st.markdown("### Recent Activity")
-    st.info("No recent activity found. Start practicing to see your progress!")
+    Your verification code is: {code}
 
-def display_practice_options():
-    st.title("Start Practice")
-    
-    # Create a nice grid of station options
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("### Station 1")
-        st.markdown("History Taking + VIVA")
-        if st.button("Start Station 1"):
-            st.session_state.page = "station1"
-            st.experimental_rerun()
-            
-        st.markdown("### Station 3")
-        st.markdown("Coming soon...")
-        st.button("Start Station 3", disabled=True)
-        
-        st.markdown("### Station 5")
-        st.markdown("Coming soon...")
-        st.button("Start Station 5", disabled=True)
-        
-    with col2:
-        st.markdown("### Station 2")
-        st.markdown("Coming soon...")
-        st.button("Start Station 2", disabled=True)
-        
-        st.markdown("### Station 4")
-        st.markdown("Coming soon...")
-        st.button("Start Station 4", disabled=True)
-        
-        st.markdown("### Station 6")
-        st.markdown("Coming soon...")
-        st.button("Start Station 6", disabled=True)
+    If you didn’t request this, you can safely ignore this message.
 
-def display_history():
-    st.title("My History")
-    st.info("This page will show your practice history. Feature coming soon!")
+    Cheers,
+    The OSCE Team 🩺
+    """
 
-def display_mock_exam():
-    st.title("Mock Exam")
-    st.info("This page will allow you to take a full mock exam. Feature coming soon!")
+    msg = MIMEText(body, "plain")
+    msg["Subject"] = subject
+    msg["From"] = sender_email
+    msg["To"] = to_email
 
-def main():
-    # Set page config
-    st.set_page_config(
-        page_title="OSCE Practice App",
-        page_icon="🏥",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
-    
-    # Initialize session state
-    if "logged_in" not in st.session_state:
-        st.session_state.logged_in = False
-    
-    if "page" not in st.session_state:
-        st.session_state.page = "login"
-    
-    # Navigation logic
-    if not st.session_state.logged_in:
-        # Show login/signup pages
-        st.sidebar.title("Navigation")
-        page = st.sidebar.radio("Go to", ["Login", "Sign Up"])
-        
-        if page == "Login":
-            st.session_state.page = "login"
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+        return True
+    except Exception as e:
+        print("SMTP Error:", e)
+        return False
+
+st.set_page_config(page_title="OSCE Practice App", page_icon="🩺", layout="centered")
+
+# Simulate a registry of users
+if "registered_users" not in st.session_state:
+    st.session_state.registered_users = {}
+
+# ✅ Handle ?nav=signup or ?nav=login in URL
+query_params = st.query_params
+if query_params.get("nav") == "signup":
+    st.session_state.auth_mode = "Sign Up"
+elif query_params.get("nav") == "login":
+    st.session_state.auth_mode = "Sign In"
+
+if "auth_mode" not in st.session_state:
+    st.session_state.auth_mode = "Sign In"
+
+st.markdown("<h1 style='text-align:center; color:#19527c;'>Welcome to OSCE Practice App 🩺</h1>", unsafe_allow_html=True)
+
+if st.session_state.auth_mode == "Sign Up":
+    st.subheader("📝 Create Your Account")
+    new_email = st.text_input("Email address")
+    new_password = st.text_input("Password", type="password")
+    confirm_password = st.text_input("Confirm password", type="password")
+
+    def is_password_strong(pw):
+        return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$", pw))
+
+    if st.button("Sign Up"):
+        if not new_email or not new_password or not confirm_password:
+            st.warning("Please complete all fields.")
+        elif new_password != confirm_password:
+            st.error("❌ Passwords do not match")
+        elif not is_password_strong(new_password):
+            st.warning("⚠️ Password must be at least 8 characters and include uppercase, lowercase, and a number.")
+        elif new_email in st.session_state.registered_users:
+            st.warning("This email is already registered. Please log in instead.")
         else:
-            st.session_state.page = "signup"
-    else:
-        # Show app navigation for logged-in users
-        st.sidebar.title("Navigation")
-        page = st.sidebar.radio("Go to", ["Dashboard", "Start Practice", "My History", "Mock Exam", "Logout"])
-        
-        if page == "Dashboard":
-            st.session_state.page = "dashboard"
-        elif page == "Start Practice":
-            st.session_state.page = "practice"
-        elif page == "My History":
-            st.session_state.page = "history"
-        elif page == "Mock Exam":
-            st.session_state.page = "mock"
-        elif page == "Logout":
-            st.session_state.logged_in = False
-            st.session_state.page = "login"
-            st.experimental_rerun()
-    
-    # Display the selected page
-    if st.session_state.page == "login":
-        login_page()
-    elif st.session_state.page == "signup":
-        signup_page()
-    elif st.session_state.page == "dashboard":
-        display_dashboard()
-    elif st.session_state.page == "practice":
-        display_practice_options()
-    elif st.session_state.page == "station1":  # New page for Station 1
-        display_station1()
-    elif st.session_state.page == "history":
-        display_history()
-    elif st.session_state.page == "mock":
-        display_mock_exam()
+            code = str(random.randint(100000, 999999))
+            st.session_state.generated_code = code
+            st.session_state.current_signup_email = new_email
+            if send_verification_email(new_email, code):
+                st.success("📬 A verification code has been sent to your email!")
+                st.session_state.show_verification = True
+            else:
+                st.error("❌ Failed to send email.")
 
-if __name__ == "__main__":
-    main()
+    if st.session_state.get("show_verification"):
+        user_code = st.text_input("Enter the verification code")
+        if user_code == st.session_state.get("generated_code"):
+            email = st.session_state.get("current_signup_email")
+            if email:
+                st.session_state.registered_users[email] = {"created": True}
+            st.session_state.logged_in = True
+            st.session_state.auth_mode = "Dashboard"
+            st.session_state.shown_welcome = False
+            st.success("✅ Email verified and account created!")
+
+    st.markdown("Already have an account? [Log in here](?nav=login)", unsafe_allow_html=True)
+
+elif st.session_state.auth_mode == "Sign In":
+    st.subheader("🔑 Sign In")
+    login_email = st.text_input("Email address")
+    login_password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if login_email and login_password:
+            st.session_state.logged_in = True
+            st.session_state.auth_mode = "Dashboard"
+            st.session_state.shown_welcome = False
+        else:
+            st.warning("Please enter both email and password.")
+
+    st.markdown("Don’t have an account? [Sign up here](?nav=signup)", unsafe_allow_html=True)
+
+# ✅ Welcome Pop-up After Login
+if st.session_state.get("logged_in") and not st.session_state.get("shown_welcome"):
+    st.markdown(
+        """
+        <style>
+        .fade-popup {
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 2em 3em;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            animation: fadeIn 1s ease-in-out forwards;
+            z-index: 9999;
+        }
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translate(-50%, -60%);}
+            to {opacity: 1; transform: translate(-50%, -50%);}
+        }
+        </style>
+        <div class='fade-popup'>
+            <h3 style='color:#19527c;'>✅ Welcome!</h3>
+            <p style='font-size: 16px;'>You’ve successfully signed in to your OSCE Dashboard.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    st.session_state.shown_welcome = True
+    time.sleep(2.5)
+    st.switch_page("pages/1_Dashboard.py")
+
+# ✅ Dashboard View with Log Out button
+if st.session_state.get("auth_mode") == "Dashboard" and st.session_state.get("logged_in"):
+    st.markdown("<h3 style='color:#19527c;'>👋 Hello, and welcome to your dashboard</h3>", unsafe_allow_html=True)
+
+    if st.button("Log Out 🔒"):
+        st.session_state.clear()
+        st.success("You’ve been logged out.")
+        st.stop()
