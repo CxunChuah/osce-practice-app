@@ -26,7 +26,7 @@ with col1:
     st.markdown("History Taking + VIVA")
     if st.button("Start Station 1"):
         st.session_state.current_station = "station1"
-        st.experimental_rerun()
+        st.rerun()
         
     st.markdown("### Station 3")
     st.markdown("Coming soon...")
