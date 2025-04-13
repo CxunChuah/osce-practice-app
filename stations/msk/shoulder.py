@@ -761,20 +761,29 @@ def display_osce_practice():
                     st.session_state.analysis_mode = True
                     st.rerun()
                     
-            with col2:
-                if st.button("Return to Station Selection"):
-                    # Reset all station-specific state
-                    for key in list(st.session_state.keys()):
-                        if key not in ['logged_in', 'username', 'practice_history']:
-                            del st.session_state[key]
-                            
-                    # Clear selected station
-                    if "selected_station" in st.session_state:
-                        del st.session_state.selected_station
-                        
-                    st.rerun()"Benefits & Precautions",
-                "content": """
-                ### Benefits & Precautions
+          with col2:
+    if st.button("Return to Station Selection"):
+        # Reset all station-specific state
+        for key in list(st.session_state.keys()):
+            if key not in ['logged_in', 'username', 'practice_history']:
+                del st.session_state[key]
+
+        # Clear selected station
+        if "selected_station" in st.session_state:
+            del st.session_state["selected_station"]
+
+        st.rerun()
+
+# Optional: Define or display content elsewhere
+content = {
+    "title": "Benefits & Precautions",
+    "content": """
+    ### Benefits & Precautions
+    Muscle engagement helps stabilize the joint and protect from overuse injuries.
+    Always warm up, and avoid exercises that cause pain.
+    """
+}
+
                 
                 **Expected actions:**
                 - Explain the benefits of each exercise
