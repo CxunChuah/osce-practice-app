@@ -62,7 +62,8 @@ if "registered_users" not in st.session_state:
 
 # Check if user is already logged in
 if st.session_state.get("logged_in", False):
-    st.switch_page("Main Page.py")
+    # Navigate to dashboard directly
+    st.switch_page("pages/1_Dashboard.py")
 
 # ✅ Handle ?nav=signup or ?nav=login in URL
 query_params = st.query_params
@@ -126,7 +127,8 @@ if st.session_state.auth_mode == "Sign Up":
                         st.session_state.logged_in = True
                         st.session_state.shown_welcome = False
                         st.success("✅ Email verified and account created!")
-                        st.switch_page("Main Page.py")
+                        # Navigate to the dashboard after successful signup
+                        st.switch_page("pages/1_Dashboard.py")
                 else:
                     st.error("❌ Invalid verification code")
 
@@ -154,7 +156,8 @@ elif st.session_state.auth_mode == "Sign In":
                         st.session_state.shown_welcome = False
                         st.session_state.username = user_data.get("username", login_email.split("@")[0])
                         st.success("✅ Login successful!")
-                        st.switch_page("Main Page.py")
+                        # Navigate to the dashboard after successful login
+                        st.switch_page("pages/1_Dashboard.py")
                     else:
                         st.error("❌ Incorrect password")
                 else:
