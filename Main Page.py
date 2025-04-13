@@ -3,6 +3,7 @@ import re
 import random
 import smtplib
 from email.mime.text import MIMEText
+import time
 
 # Set page configuration
 st.set_page_config(page_title="Login - OSCE App", page_icon="🩺", layout="centered")
@@ -169,46 +170,41 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
-# Demo credentials note
-st.markdown("---")
-st.markdown("""
-    <div style="text-align: center; color: #666;">
-    <small>OSCE Practice App for Physiotherapy Students</small>
-    </div>
-    """, unsafe_allow_html=True)
-    # Welcome Pop-up After Login
-    if not st.session_state.get("shown_welcome", False):
-        st.markdown(
-            """
-            <style>
-            .fade-popup {
-                position: fixed;
-                top: 25%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background-color: #ffffff;
-                padding: 2em 3em;
-                border-radius: 12px;
-                box-shadow: 0 0 20px rgba(0,0,0,0.2);
-                animation: fadeIn 1s ease-in-out forwards;
-                z-index: 9999;
-            }
-            @keyframes fadeIn {
-                from {opacity: 0; transform: translate(-50%, -60%);}
-                to {opacity: 1; transform: translate(-50%, -50%);}
-            }
-            </style>
-            <div class='fade-popup'>
-                <h3 style='color:#19527c;'>✅ Welcome!</h3>
-                <p style='font-size: 16px;'>You've successfully signed in to your OSCE Dashboard.</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        st.session_state.shown_welcome = True
-        time.sleep(2.5)
-        st.switch_page("pages/1_Dashboard.py")
-    
+# Welcome Pop-up After Login
+if not st.session_state.get("shown_welcome", False) and st.session_state.get("logged_in", False):
+    st.markdown(
+        """
+        <style>
+        .fade-popup {
+            position: fixed;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 2em 3em;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            animation: fadeIn 1s ease-in-out forwards;
+            z-index: 9999;
+        }
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translate(-50%, -60%);}
+            to {opacity: 1; transform: translate(-50%, -50%);}
+        }
+        </style>
+        <div class='fade-popup'>
+            <h3 style='color:#19527c;'>✅ Welcome!</h3>
+            <p style='font-size: 16px;'>You've successfully signed in to your OSCE Dashboard.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    st.session_state.shown_welcome = True
+    time.sleep(2.5)
+    st.switch_page("pages/1_Dashboard.py")
+
+# Only show dashboard if logged in
+if st.session_state.get("logged_in", False):
     # Main dashboard content
     st.markdown("<h1 style='text-align:center; color:#19527c;'>Welcome to OSCE Practice App 🩺</h1>", unsafe_allow_html=True)
     st.markdown(f"<h3 style='color:#19527c;'>👋 Hello, {st.session_state.get('username', 'User')}!</h3>", unsafe_allow_html=True)
