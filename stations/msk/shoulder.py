@@ -796,8 +796,7 @@ def display_osce_practice():
                     "Provided progression options",
                     "Discussed when to stop exercises",
                     "Considered medical history in explanations"
-                ]
-            },
+                ],
             {
                 "name": "Closure",
                 "content": """
