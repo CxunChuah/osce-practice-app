@@ -168,6 +168,14 @@ st.markdown("""
     <small>OSCE Practice App for Physiotherapy Students</small>
     </div>
     """, unsafe_allow_html=True)
+
+# Demo credentials note
+st.markdown("---")
+st.markdown("""
+    <div style="text-align: center; color: #666;">
+    <small>OSCE Practice App for Physiotherapy Students</small>
+    </div>
+    """, unsafe_allow_html=True)
     # Welcome Pop-up After Login
     if not st.session_state.get("shown_welcome", False):
         st.markdown(
