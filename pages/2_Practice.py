@@ -80,7 +80,7 @@ if "selected_station" in st.session_state:
     # Clear selection if user wants to select a different station
     if st.sidebar.button("← Return to Station Selection"):
         del st.session_state.selected_station
-        st.experimental_rerun()
+        st.rerun()  # Updated from experimental_rerun()
         
     # Stop processing the rest of the page
     st.stop()
@@ -182,4 +182,4 @@ for category, category_stations in stations.items():
             if st.button(button_label, key=f"btn_{station['title']}", disabled=disabled):
                 # Store the selected station in session state
                 st.session_state.selected_station = station["title"]
-                st.experimental_rerun()
+                st.rerun()  # Updated from experimental_rerun()
