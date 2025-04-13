@@ -93,7 +93,7 @@ if st.session_state.auth_mode == "Sign Up":
             elif not is_password_strong(new_password):
                 st.warning("⚠️ Password must be at least 8 characters and include uppercase, lowercase, and a number.")
             elif new_email in st.session_state.registered_users:
-                st.warning("This email is already registered. Please log in instead.")
+                st.error("❌ This email is already registered. Please use a different email or log in instead.")
             else:
                 code = str(random.randint(100000, 999999))
                 st.session_state.generated_code = code
@@ -144,10 +144,10 @@ elif st.session_state.auth_mode == "Sign In":
             if not login_email or not login_password:
                 st.warning("Please enter both email and password.")
             else:
-                # In a real app, you would verify credentials here
-                # For demo, we'll just check if email exists and accept any password
+                # Check if the email exists in our registered users
                 if login_email in st.session_state.registered_users:
                     user_data = st.session_state.registered_users[login_email]
+                    # Verify the password matches
                     if login_password == user_data.get("password"):
                         st.session_state.logged_in = True
                         st.session_state.shown_welcome = False
@@ -157,12 +157,7 @@ elif st.session_state.auth_mode == "Sign In":
                     else:
                         st.error("❌ Incorrect password")
                 else:
-                    # For testing, allow any email/password
-                    st.session_state.logged_in = True
-                    st.session_state.shown_welcome = False
-                    st.session_state.username = login_email.split("@")[0]
-                    st.success("✅ Login successful!")
-                    st.switch_page("Main Page.py")
+                    st.error("❌ Email not registered. Please sign up first.")
 
     st.markdown("Don't have an account? [Sign up here](?nav=signup)", unsafe_allow_html=True)
 
@@ -170,6 +165,6 @@ elif st.session_state.auth_mode == "Sign In":
 st.markdown("---")
 st.markdown("""
     <div style="text-align: center; color: #666;">
-    <small>For testing, you can use any email and password</small>
+    <small>OSCE Practice App for Physiotherapy Students</small>
     </div>
     """, unsafe_allow_html=True)
