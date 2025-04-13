@@ -820,7 +820,6 @@ def display_osce_practice():
                     "Thanked patient"
                 ]
             }
-        ]
         
         # Display current step
         current_step = st.session_state.current_step
