@@ -49,14 +49,14 @@ def display_station():
             st.session_state.station_started = False
             st.warning("Time's up! Please complete your examination.")
             st.session_state.show_feedback = True
-            st.experimental_rerun()
+            st.rerun()  # Updated from experimental_rerun()
     
     # Station content
     if not st.session_state.station_started:
         if st.button("Start Station"):
             st.session_state.station_started = True
             st.session_state.start_time = time.time()
-            st.experimental_rerun()
+            st.rerun()  # Updated from experimental_rerun()
     else:
         # Define examination steps
         steps = [
@@ -250,7 +250,7 @@ def display_station():
                 if current_step > 0:
                     if st.button("Previous Step"):
                         st.session_state.current_step -= 1
-                        st.experimental_rerun()
+                        st.rerun()  # Updated from experimental_rerun()
             
             with cols[1]:
                 if st.button("Next Step"):
@@ -263,7 +263,7 @@ def display_station():
                     })
                     
                     st.session_state.current_step += 1
-                    st.experimental_rerun()
+                    st.rerun()  # Updated from experimental_rerun()
         else:
             # Station completed
             st.success("You have completed all steps of the examination!")
@@ -321,7 +321,7 @@ def display_station():
                 if "selected_station" in st.session_state:
                     del st.session_state.selected_station
                     
-                st.experimental_rerun()
+                st.rerun()  # Updated from experimental_rerun()
 
 # For testing directly
 if __name__ == "__main__":
