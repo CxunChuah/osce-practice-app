@@ -1,23 +1,7 @@
 import streamlit as st
 import os
 import sys
-
-# Add the parent directory to the path so we can import from station modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# Import station modules - uncomment these as you implement each station
-try:
-    from stations.msk.shoulder import display_station as display_shoulder_station
-    from stations.msk.knee import display_station as display_knee_station
-except ImportError:
-    # Create placeholder functions if the modules don't exist yet
-    def display_shoulder_station():
-        st.title("Shoulder Examination Station")
-        st.info("This station is under development. Please check back later.")
-    
-    def display_knee_station():
-        st.title("Knee Examination Station")
-        st.info("This station is under development. Please check back later.")
+import importlib.util
 
 # Set page config
 st.set_page_config(
@@ -31,15 +15,47 @@ if not st.session_state.get("logged_in", False):
     st.warning("Please log in to access this page.")
     st.switch_page("Main Page.py")  # Maintain your original redirect
 
+# Safe import function
+def safe_import_module(module_name, function_name):
+    """Safely import a function from a module, returning None if it fails."""
+    try:
+        # Check if module exists and can be imported
+        module_spec = importlib.util.find_spec(module_name)
+        if module_spec is None:
+            return None
+            
+        # Import the module
+        module = importlib.import_module(module_name)
+        
+        # Get the function
+        if hasattr(module, function_name):
+            return getattr(module, function_name)
+        return None
+    except Exception as e:
+        st.error(f"Error importing {module_name}: {e}")
+        return None
+
+# Safely import station display functions
+display_shoulder_station = safe_import_module("stations.msk.shoulder", "display_station")
+display_knee_station = safe_import_module("stations.msk.knee", "display_station")
+
 # Check if we're in a specific station mode
 if "selected_station" in st.session_state:
     selected = st.session_state.selected_station
     
     # Display the appropriate station based on selection
     if "MSK Station 1: Shoulder Examination" in selected:
-        display_shoulder_station()
+        if display_shoulder_station:
+            display_shoulder_station()
+        else:
+            st.error("The shoulder examination station module is missing or has an error.")
+            st.info("This station is currently under development.")
     elif "MSK Station 2: Knee Examination" in selected:
-        display_knee_station()
+        if display_knee_station:
+            display_knee_station()
+        else:
+            st.error("The knee examination station module is missing or has an error.")
+            st.info("This station is currently under development.")
     elif "Cardio Station 1: Cardiovascular Examination" in selected:
         st.title("Cardiovascular Examination Station")
         st.info("This station is under development. Please check back later.")
@@ -65,7 +81,7 @@ if "selected_station" in st.session_state:
     if st.sidebar.button("← Return to Station Selection"):
         del st.session_state.selected_station
         st.experimental_rerun()
-    
+        
     # Stop processing the rest of the page
     st.stop()
 
@@ -152,8 +168,12 @@ for category, category_stations in stations.items():
             
             # Button to start this station
             button_label = "Start Station"
-            if "MSK Station 1" in station["title"] or "MSK Station 2" in station["title"]:
-                # Only enable buttons for implemented stations
+            
+            # Only enable buttons for implemented stations
+            # Check if the specific station modules exist
+            if "MSK Station 1" in station["title"] and display_shoulder_station:
+                disabled = False
+            elif "MSK Station 2" in station["title"] and display_knee_station:
                 disabled = False
             else:
                 button_label = "Coming Soon"
