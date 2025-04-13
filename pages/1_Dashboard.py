@@ -8,53 +8,55 @@ if not st.session_state.get("logged_in", False):
     st.warning("Please log in to access this page.")
     st.switch_page("Main Page.py")
 
-# Welcome animation (using CSS)
-st.markdown("""
-<style>
-@keyframes fadeIn {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-}
-.welcome-text {
-    animation: fadeIn 1.5s ease-in-out;
-    text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
-    color: #19527c;
-}
-</style>
-""", unsafe_allow_html=True)
+# Display header and welcome
+st.title("OSCE Practice Dashboard")
+st.write(f"Welcome, {st.session_state.get('username', 'User')}! 👋")
 
-st.markdown(f'<div class="welcome-text">Welcome to Your OSCE Practice Dashboard!</div>', unsafe_allow_html=True)
+# Main dashboard content
+st.markdown("## Practice Options")
 
-# Quick access buttons
-st.markdown("### Quick Access")
+# Create two columns for the options
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    if st.button("Start Practice"):
+    st.markdown("""
+    ### Start Practice
+    Practice with specific OSCE stations
+    """)
+    if st.button("Start Practice", key="practice_btn"):
         st.switch_page("pages/2_Practice.py")
 
 with col2:
-    if st.button("My History"):
-        st.info("History page coming soon!")
+    st.markdown("""
+    ### My History
+    View your past practice results
+    """)
+    if st.button("View History", key="history_btn", disabled=True):
+        st.info("Coming soon!")
 
 with col3:
-    if st.button("Mock Exam"):
-        st.info("Mock Exam feature coming soon!")
+    st.markdown("""
+    ### Mock Exam
+    Take a full mock OSCE exam
+    """)
+    if st.button("Start Mock Exam", key="mock_btn", disabled=True):
+        st.info("Coming soon!")
 
-# Recent activity or stats
-st.markdown("### Recent Activity")
-st.info("No recent activity found. Start practicing to see your progress!")
+# Add separator
+st.markdown("---")
 
-# Tips section
-st.markdown("### OSCE Tips")
-tips = [
-    "Always introduce yourself to the patient",
-    "Practice active listening during history taking",
-    "Maintain eye contact and show empathy",
-    "Structure your questions from open to closed",
-    "Always check for red flags in any presentation"
-]
-for tip in tips:
-    st.markdown(f"• {tip}")
+# Add Log Out button at the bottom of the page
+if st.button("Log Out 🔒", key="logout_btn"):
+    # Clear session state except for registered users
+    for key in list(st.session_state.keys()):
+        if key != "registered_users":  # Keep the registered users data
+            del st.session_state[key]
+    st.success("You've been logged out.")
+    st.switch_page("Main Page.py")
+
+# Display version
+st.markdown("""
+<div style="text-align: center; color: #888; margin-top: 50px;">
+    <small>OSCE Practice App v1.0</small>
+</div>
+""", unsafe_allow_html=True)
