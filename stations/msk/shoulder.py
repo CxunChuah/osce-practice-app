@@ -64,8 +64,8 @@ def display_scenario_analysis():
         st.markdown("""
         ### Patient Profile
         
-        <div style="background-color: #f0f8ff; padding: 20px; border-radius: 10px;">
-        <span style="background-color: yellow;">Mr. Specter is a 72-year-old retired food vendor</span>
+        <div style="background-color: #e6f7ff; padding: 20px; border: 2px solid #91d5ff; border-radius: 10px; margin-bottom: 15px;">
+        <span style="background-color: #ffff00; padding: 2px 5px; font-weight: bold;">Mr. Specter is a 72-year-old retired food vendor</span>
         </div>
         
         **Analysis:**
@@ -85,8 +85,8 @@ def display_scenario_analysis():
         st.markdown("""
         ### Medical History
         
-        <div style="background-color: #f0f8ff; padding: 20px; border-radius: 10px;">
-        <span style="background-color: yellow;">with a history of Diabetes Mellitus, Postural Hypotension and Hyperlipidemia</span>
+        <div style="background-color: #e6f7ff; padding: 20px; border: 2px solid #91d5ff; border-radius: 10px; margin-bottom: 15px;">
+        <span style="background-color: #ffff00; padding: 2px 5px; font-weight: bold;">with a history of Diabetes Mellitus, Postural Hypotension and Hyperlipidemia</span>
         </div>
         
         **Analysis:**
@@ -113,8 +113,8 @@ def display_scenario_analysis():
         st.markdown("""
         ### Current Status
         
-        <div style="background-color: #f0f8ff; padding: 20px; border-radius: 10px;">
-        <span style="background-color: yellow;">He visited physio rehab after his total hip replacement. Currently he is post-op 2 weeks. Dr allowed Partial weight bearing.</span>
+        <div style="background-color: #e6f7ff; padding: 20px; border: 2px solid #91d5ff; border-radius: 10px; margin-bottom: 15px;">
+        <span style="background-color: #ffff00; padding: 2px 5px; font-weight: bold;">He visited physio rehab after his total hip replacement. Currently he is post-op 2 weeks. Dr allowed Partial weight bearing.</span>
         </div>
         
         **Analysis:**
@@ -198,30 +198,26 @@ def display_osce_practice():
     Hypotension and Hyperlipidemia. He visited physio rehab after his total hip replacement. 
     Currently he is post-op 2 weeks. Dr allowed Partial weight bearing. Please teach him 2 appropriate exercises.
     
-    **Time allowed:** 8 minutes
+    **Target time:** 8 minutes
     """)
     
-    # Timer display
+    # Stopwatch display
     if st.session_state.station_started:
         elapsed = time.time() - st.session_state.start_time
-        remaining = max(0, 8*60 - elapsed)
-        
-        mins, secs = divmod(int(remaining), 60)
+        mins, secs = divmod(int(elapsed), 60)
         time_str = f"{mins:02d}:{secs:02d}"
         
-        # Display timer prominently
+        # Display stopwatch prominently
         st.markdown(f"""
-        <div style="background-color:#f0f0f0; padding:10px; border-radius:5px; text-align:center;">
-            <h2>Time Remaining: {time_str}</h2>
+        <div style="background-color:#f5f5f5; padding:10px; border-radius:5px; border:2px solid #4CAF50; text-align:center;">
+            <h2>Time Elapsed: {time_str}</h2>
+            <p>Target: 8 minutes</p>
         </div>
         """, unsafe_allow_html=True)
         
-        # End station if time runs out
-        if remaining <= 0:
-            st.session_state.station_started = False
-            st.warning("Time's up! Please complete your demonstration.")
-            st.session_state.show_feedback = True
-            st.rerun()
+        # Warning if over time
+        if elapsed > 8*60:
+            st.warning("You've exceeded the 8-minute target time. In a real OSCE, you would need to conclude now.")
     
     # Station content
     if not st.session_state.station_started:
@@ -330,6 +326,454 @@ def display_osce_practice():
             },
             {
                 "name": "Benefits & Precautions",
+                "content": """
+                ### Benefits & Precautions
+                
+                **Expected actions:**
+                - Explain the benefits of each exercise
+                - Discuss specific precautions for THR
+                - Address safety concerns related to medical history
+                - Provide progressions/regressions as appropriate
+                
+                **Key points to cover:**
+                - Hip precautions (no flexion >90°, no adduction past midline, no internal rotation)
+                - Signs of excessive exertion to watch for
+                - How exercises contribute to recovery
+                - When to stop an exercise (pain, dizziness, etc.)
+                - Considerations for diabetes and postural hypotension
+                """,
+                "checklist": [
+                    "Explained benefits of exercises",
+                    "Covered relevant hip precautions",
+                    "Addressed safety with position changes",
+                    "Provided progression options",
+                    "Discussed when to stop exercises",
+                    "Considered medical history in explanations"
+                ]
+            },
+            {
+                "name": "Closure",
+                "content": """
+                ### Closure
+                
+                **Expected actions:**
+                - Check understanding
+                - Provide opportunity for questions
+                - Give written instructions or reminders
+                - Schedule follow-up or next steps
+                - Thank the patient
+                
+                **Considerations:**
+                Ensure Mr. Specter fully understands the exercises and precautions before ending the session.
+                """,
+                "checklist": [
+                    "Checked understanding",
+                    "Answered questions appropriately",
+                    "Provided written/visual instructions",
+                    "Discussed follow-up plan",
+                    "Thanked patient"
+                ]
+            }
+        ]
+        
+        # Display current step
+        current_step = st.session_state.current_step
+        
+        if current_step < len(steps):
+            step = steps[current_step]
+            
+            # Create two columns - one for content, one for checklist
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                st.markdown(step["content"])
+            
+            with col2:
+                # Checklist for current step
+                st.markdown("""
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+                <h3>Checklist</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                checked_items = []
+                for i, item in enumerate(step["checklist"]):
+                    if st.checkbox(item, key=f"check_{current_step}_{i}"):
+                        checked_items.append(item)
+            
+            # Notes section
+            st.text_area("Your notes for this step:", 
+                          key=f"notes_{current_step}", 
+                          height=100)
+            
+            # Navigation buttons
+            cols = st.columns(2)
+            
+            with cols[0]:
+                if current_step > 0:
+                    if st.button("Previous Step"):
+                        st.session_state.current_step -= 1
+                        st.rerun()
+            
+            with cols[1]:
+                if st.button("Next Step"):
+                    # Save completed checklist items
+                    st.session_state.completed_steps.append({
+                        "step_name": step["name"],
+                        "completed_items": checked_items,
+                        "total_items": len(step["checklist"]),
+                        "notes": st.session_state.get(f"notes_{current_step}", "")
+                    })
+                    
+                    st.session_state.current_step += 1
+                    st.rerun()
+        else:
+            # Capture final time
+            if st.session_state.start_time:
+                total_time = time.time() - st.session_state.start_time
+                mins, secs = divmod(int(total_time), 60)
+                time_taken = f"{mins:02d}:{secs:02d}"
+            else:
+                time_taken = "Not recorded"
+            
+            # Station completed
+            st.success("You have completed all steps of the exercise teaching demonstration!")
+            
+            # Calculate score
+            total_checklist_items = sum(len(s["checklist"]) for s in steps)
+            completed_items = sum(len(s["completed_items"]) for s in st.session_state.completed_steps)
+            score_percentage = (completed_items / total_checklist_items) * 100
+            
+            # Display score with time taken
+            st.markdown(f"""
+            <div style="background-color: #f0f7ff; padding: 20px; border-radius: 10px; border: 2px solid #4285f4; margin-bottom: 20px;">
+                <h2>Station Summary</h2>
+                <p><strong>Time taken:</strong> {time_taken} (Target: 8 minutes)</p>
+                <p><strong>Score:</strong> {completed_items}/{total_checklist_items} ({score_percentage:.1f}%)</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("### Performance by section:")
+            
+            # Display performance by section
+            for i, step_result in enumerate(st.session_state.completed_steps):
+                step_score = (len(step_result["completed_items"]) / step_result["total_items"]) * 100
+                st.markdown(f"""
+                <div style="background-color: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 5px solid #4CAF50;">
+                <strong>{step_result["step_name"]}:</strong> {len(step_result["completed_items"])}/{step_result["total_items"]} ({step_score:.1f}%)
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if step_result["notes"]:
+                    st.markdown(f"**Your notes:** {step_result['notes']}")
+            
+            # Example feedback
+            st.markdown("""
+            ## Sample Model Answer
+            
+            ### Appropriate Exercises
+            
+            **Exercise 1: Supine Isometric Gluteal Contractions**
+            - Starting position: Lying on back with legs straight
+            - Action: Squeeze buttocks together, hold for 5 seconds, then relax
+            - Dosage: 10 repetitions, 3 sets per day
+            - Benefits: Strengthens gluteal muscles without hip movement, supports hip stability
+            - Precautions: Ensure no hip rotation during the exercise
+            
+            **Exercise 2: Ankle Pumps and Circles**
+            - Starting position: Lying on back or sitting with legs extended
+            - Action: Point toes up and down, then rotate ankles in circles
+            - Dosage: 10 repetitions each direction, every hour while awake
+            - Benefits: Improves circulation, prevents blood clots, maintains ankle mobility
+            - Precautions: Ensure no hip movement during the exercise
+            
+            ### Key Points in Teaching
+            
+            1. **Clear Instructions**: Use simple language appropriate for a 72-year-old
+            2. **Demonstration**: Show the exercise before asking patient to perform it
+            3. **Observation**: Watch patient perform and provide corrections
+            4. **Precautions**: Emphasize THR precautions (no flexion >90°, no adduction past midline, no internal rotation)
+            5. **Adaptation**: Consider postural hypotension with position changes
+            6. **Documentation**: Provide written instructions with pictures
+            
+            ### Other Appropriate Exercises
+            
+            - Supine hip abduction within safe range
+            - Seated knee extension (if appropriate for weight bearing status)
+            - Abdominal bracing for core stability
+            """)
+            
+            # Save results button
+            if st.button("Save Results"):
+                # Here you would implement saving to database
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                # Save to session state for now
+                if "practice_history" not in st.session_state:
+                    st.session_state.practice_history = []
+                
+                st.session_state.practice_history.append({
+                    "station": "Post-Op THR Exercise Teaching",
+                    "timestamp": timestamp,
+                    "time_taken": time_taken,
+                    "score": f"{score_percentage:.1f}%",
+                    "details": st.session_state.completed_steps
+                })
+                
+                st.success("Results saved successfully!")
+            
+            # Return buttons
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if st.button("Return to Scenario Analysis"):
+                    # Reset the OSCE practice state
+                    for key in ['station_started', 'start_time', 'current_step', 'completed_steps', 'notes']:
+                        if key in st.session_state:
+                            del st.session_state[key]
+                    
+                    # Go back to analysis mode
+                    st.session_state.osce_practice_mode = False
+                    st.session_state.analysis_mode = True
+                    st.rerun()
+                    
+            with col2:
+                if st.button("Return to Station Selection"):
+                    # Reset all station-specific state
+                    for key in list(st.session_state.keys()):
+                        if key not in ['logged_in', 'username', 'practice_history']:
+                            del st.session_state[key]
+                            
+                    # Clear selected station
+                    if "selected_station" in st.session_state:
+                        del st.session_state.selected_station
+                        
+                    st.rerun()
+            {
+                "name": "Benefits & Precautions",
+                "content": """
+                ### Benefits & Precautions
+                
+                **Expected actions:**
+                - Explain the benefits of each exercise
+                - Discuss specific precautions for THR
+                - Address safety concerns related to medical history
+                - Provide progressions/regressions as appropriate
+                
+                **Key points to cover:**
+                - Hip precautions (no flexion >90°, no adduction past midline, no internal rotation)
+                - Signs of excessive exertion to watch for
+                - How exercises contribute to recovery
+                - When to stop an exercise (pain, dizziness, etc.)
+                - Considerations for diabetes and postural hypotension
+                """,
+                "checklist": [
+                    "Explained benefits of exercises",
+                    "Covered relevant hip precautions",
+                    "Addressed safety with position changes",
+                    "Provided progression options",
+                    "Discussed when to stop exercises",
+                    "Considered medical history in explanations"
+                ]
+            },
+            {
+                "name": "Closure",
+                "content": """
+                ### Closure
+                
+                **Expected actions:**
+                - Check understanding
+                - Provide opportunity for questions
+                - Give written instructions or reminders
+                - Schedule follow-up or next steps
+                - Thank the patient
+                
+                **Considerations:**
+                Ensure Mr. Specter fully understands the exercises and precautions before ending the session.
+                """,
+                "checklist": [
+                    "Checked understanding",
+                    "Answered questions appropriately",
+                    "Provided written/visual instructions",
+                    "Discussed follow-up plan",
+                    "Thanked patient"
+                ]
+            }
+        ]
+        
+        # Display current step
+        current_step = st.session_state.current_step
+        
+        if current_step < len(steps):
+            step = steps[current_step]
+            
+            # Create two columns - one for content, one for checklist
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                st.markdown(step["content"])
+            
+            with col2:
+                # Checklist for current step
+                st.markdown("""
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 10px; border: 1px solid #ddd;">
+                <h3>Checklist</h3>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                checked_items = []
+                for i, item in enumerate(step["checklist"]):
+                    if st.checkbox(item, key=f"check_{current_step}_{i}"):
+                        checked_items.append(item)
+            
+            # Notes section
+            st.text_area("Your notes for this step:", 
+                          key=f"notes_{current_step}", 
+                          height=100)
+            
+            # Navigation buttons
+            cols = st.columns(2)
+            
+            with cols[0]:
+                if current_step > 0:
+                    if st.button("Previous Step"):
+                        st.session_state.current_step -= 1
+                        st.rerun()
+            
+            with cols[1]:
+                if st.button("Next Step"):
+                    # Save completed checklist items
+                    st.session_state.completed_steps.append({
+                        "step_name": step["name"],
+                        "completed_items": checked_items,
+                        "total_items": len(step["checklist"]),
+                        "notes": st.session_state.get(f"notes_{current_step}", "")
+                    })
+                    
+                    st.session_state.current_step += 1
+                    st.rerun()
+        else:
+            # Capture final time
+            if st.session_state.start_time:
+                total_time = time.time() - st.session_state.start_time
+                mins, secs = divmod(int(total_time), 60)
+                time_taken = f"{mins:02d}:{secs:02d}"
+            else:
+                time_taken = "Not recorded"
+            
+            # Station completed
+            st.success("You have completed all steps of the exercise teaching demonstration!")
+            
+            # Calculate score
+            total_checklist_items = sum(len(s["checklist"]) for s in steps)
+            completed_items = sum(len(s["completed_items"]) for s in st.session_state.completed_steps)
+            score_percentage = (completed_items / total_checklist_items) * 100
+            
+            # Display score with time taken
+            st.markdown(f"""
+            <div style="background-color: #f0f7ff; padding: 20px; border-radius: 10px; border: 2px solid #4285f4; margin-bottom: 20px;">
+                <h2>Station Summary</h2>
+                <p><strong>Time taken:</strong> {time_taken} (Target: 8 minutes)</p>
+                <p><strong>Score:</strong> {completed_items}/{total_checklist_items} ({score_percentage:.1f}%)</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("### Performance by section:")
+            
+            # Display performance by section
+            for i, step_result in enumerate(st.session_state.completed_steps):
+                step_score = (len(step_result["completed_items"]) / step_result["total_items"]) * 100
+                st.markdown(f"""
+                <div style="background-color: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 5px solid #4CAF50;">
+                <strong>{step_result["step_name"]}:</strong> {len(step_result["completed_items"])}/{step_result["total_items"]} ({step_score:.1f}%)
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if step_result["notes"]:
+                    st.markdown(f"**Your notes:** {step_result['notes']}")
+            
+            # Example feedback
+            st.markdown("""
+            ## Sample Model Answer
+            
+            ### Appropriate Exercises
+            
+            **Exercise 1: Supine Isometric Gluteal Contractions**
+            - Starting position: Lying on back with legs straight
+            - Action: Squeeze buttocks together, hold for 5 seconds, then relax
+            - Dosage: 10 repetitions, 3 sets per day
+            - Benefits: Strengthens gluteal muscles without hip movement, supports hip stability
+            - Precautions: Ensure no hip rotation during the exercise
+            
+            **Exercise 2: Ankle Pumps and Circles**
+            - Starting position: Lying on back or sitting with legs extended
+            - Action: Point toes up and down, then rotate ankles in circles
+            - Dosage: 10 repetitions each direction, every hour while awake
+            - Benefits: Improves circulation, prevents blood clots, maintains ankle mobility
+            - Precautions: Ensure no hip movement during the exercise
+            
+            ### Key Points in Teaching
+            
+            1. **Clear Instructions**: Use simple language appropriate for a 72-year-old
+            2. **Demonstration**: Show the exercise before asking patient to perform it
+            3. **Observation**: Watch patient perform and provide corrections
+            4. **Precautions**: Emphasize THR precautions (no flexion >90°, no adduction past midline, no internal rotation)
+            5. **Adaptation**: Consider postural hypotension with position changes
+            6. **Documentation**: Provide written instructions with pictures
+            
+            ### Other Appropriate Exercises
+            
+            - Supine hip abduction within safe range
+            - Seated knee extension (if appropriate for weight bearing status)
+            - Abdominal bracing for core stability
+            """)
+            
+            # Save results button
+            if st.button("Save Results"):
+                # Here you would implement saving to database
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                # Save to session state for now
+                if "practice_history" not in st.session_state:
+                    st.session_state.practice_history = []
+                
+                st.session_state.practice_history.append({
+                    "station": "Post-Op THR Exercise Teaching",
+                    "timestamp": timestamp,
+                    "time_taken": time_taken,
+                    "score": f"{score_percentage:.1f}%",
+                    "details": st.session_state.completed_steps
+                })
+                
+                st.success("Results saved successfully!")
+            
+            # Return buttons
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if st.button("Return to Scenario Analysis"):
+                    # Reset the OSCE practice state
+                    for key in ['station_started', 'start_time', 'current_step', 'completed_steps', 'notes']:
+                        if key in st.session_state:
+                            del st.session_state[key]
+                    
+                    # Go back to analysis mode
+                    st.session_state.osce_practice_mode = False
+                    st.session_state.analysis_mode = True
+                    st.rerun()
+                    
+            with col2:
+                if st.button("Return to Station Selection"):
+                    # Reset all station-specific state
+                    for key in list(st.session_state.keys()):
+                        if key not in ['logged_in', 'username', 'practice_history']:
+                            del st.session_state[key]
+                            
+                    # Clear selected station
+                    if "selected_station" in st.session_state:
+                        del st.session_state.selected_station
+                        
+                    st.rerun()Benefits & Precautions",
                 "content": """
                 ### Benefits & Precautions
                 
