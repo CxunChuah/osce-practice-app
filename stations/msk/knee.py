@@ -298,4 +298,31 @@ def display_station():
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
                 # Save to session state for now
-                if "practice_history"
+                if "practice_history" not in st.session_state:
+                    st.session_state.practice_history = []
+                
+                st.session_state.practice_history.append({
+                    "station": "Knee Examination",
+                    "timestamp": timestamp,
+                    "score": f"{score_percentage:.1f}%",
+                    "details": st.session_state.completed_steps
+                })
+                
+                st.success("Results saved successfully!")
+            
+            # Return to stations button
+            if st.button("Return to Stations"):
+                # Reset the current station state but keep practice history
+                for key in list(st.session_state.keys()):
+                    if key not in ['logged_in', 'username', 'practice_history']:
+                        del st.session_state[key]
+                        
+                # Clear selected station
+                if "selected_station" in st.session_state:
+                    del st.session_state.selected_station
+                    
+                st.experimental_rerun()
+
+# For testing directly
+if __name__ == "__main__":
+    display_station()
