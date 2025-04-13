@@ -772,7 +772,7 @@ def display_osce_practice():
                     if "selected_station" in st.session_state:
                         del st.session_state.selected_station
                         
-                    st.rerun()Benefits & Precautions",
+                    st.rerun()"Benefits & Precautions",
                 "content": """
                 ### Benefits & Precautions
                 
