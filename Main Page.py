@@ -46,16 +46,10 @@ def save_user_data(user_data):
 # 📬 Email-sending function using Gmail SMTP
 def send_verification_email(to_email, code):
     try:
-        # For testing, we'll just show the code instead of sending email
-        st.info(f"📧 Your verification code is: {code}")
-        return True
-        
-        # Uncomment below to use actual email sending
-        """
         sender_email = st.secrets["GMAIL_USER"]
         sender_password = st.secrets["GMAIL_PASS"]
         subject = "Your OSCE Signup Code (Check Inbox)"
-        body = f'''
+        body = f"""
         Hi there 👋,
 
         Thanks for signing up with OSCE Practice App.
@@ -66,7 +60,7 @@ def send_verification_email(to_email, code):
 
         Cheers,
         The OSCE Team 🩺
-        '''
+        """
 
         msg = MIMEText(body, "plain")
         msg["Subject"] = subject
@@ -77,7 +71,6 @@ def send_verification_email(to_email, code):
             server.login(sender_email, sender_password)
             server.send_message(msg)
         return True
-        """
     except Exception as e:
         print("SMTP Error:", e)
         return False
@@ -103,9 +96,6 @@ if "registered_users" not in st.session_state:
         save_user_data(loaded_users)
     
     st.session_state.registered_users = loaded_users
-
-# Debug - Show registered users (comment this out in production)
-# st.write("Current registered users:", st.session_state.registered_users)
 
 # Check if user is already logged in
 if st.session_state.get("logged_in", False):
@@ -150,12 +140,12 @@ if st.session_state.auth_mode == "Sign Up":
                 st.session_state.current_signup_email = new_email
                 st.session_state.current_signup_password = new_password
                 
-                # Send code (or simulate sending)
+                # Send verification email
                 if send_verification_email(new_email, code):
-                    st.success("📬 A verification code has been sent. Check above for the code! (In production, this would go to your email)")
+                    st.success("📬 A verification code has been sent to your email!")
                     st.session_state.show_verification = True
                 else:
-                    st.error("❌ Failed to send verification code. Please try again.")
+                    st.error("❌ Failed to send email. Please try again.")
 
     # Verification form
     if st.session_state.get("show_verification"):
@@ -193,9 +183,6 @@ if st.session_state.auth_mode == "Sign Up":
 # Sign In Form
 elif st.session_state.auth_mode == "Sign In":
     st.subheader("🔑 Sign In")
-    
-    # Debug display - uncomment if needed
-    # st.write("Available emails:", list(st.session_state.registered_users.keys()))
     
     with st.form(key="login_form"):
         login_email = st.text_input("Email address")
