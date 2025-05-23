@@ -761,7 +761,7 @@ def display_osce_practice():
                     st.session_state.analysis_mode = True
                     st.rerun()
                     
-          with col2:
+with col2:
     if st.button("Return to Station Selection"):
         # Reset all station-specific state
         for key in list(st.session_state.keys()):
